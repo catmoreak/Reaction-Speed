@@ -1,7 +1,7 @@
 'use client';
 
-import { SYSTEM_ENTRYPOINTS } from 'next/dist/shared/lib/constants';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
@@ -41,12 +41,12 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <button className="group px-8 py-4 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-green-500/25">
+              <Link href="/game" className="group px-8 py-4 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-green-500/25 inline-block">
                 <span className="flex items-center space-x-2">
                   <span>🚀 Start Testing</span>
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
-              </button>
+              </Link>
               <button className="px-8 py-4 border-2 border-slate-400 text-slate-300 hover:border-white hover:text-white text-lg font-semibold rounded-2xl transition-all duration-300">
                 View Leaderboard
               </button>
@@ -164,9 +164,9 @@ export default function Home() {
             <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
               Join millions of players worldwide who are competing to be the fastest. Are you ready to claim your spot at the top?
             </p>
-            <button className="px-12 py-5 bg-linear-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/25">
-              Start Playing Now
-            </button>
+            <Link href="/game" className="px-12 py-5 bg-linear-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/25 inline-block">
+              🚀 Start Playing Now
+            </Link>
           </div>
         </section>
 
