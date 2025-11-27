@@ -43,7 +43,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Link href="/game" className="group px-8 py-4 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-green-500/25 inline-block">
                 <span className="flex items-center space-x-2">
-                  <span>🚀 Start Testing</span>
+                  <span>  Start now </span>
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
               </Link>

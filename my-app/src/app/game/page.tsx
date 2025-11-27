@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { Black_And_White_Picture } from 'next/font/google';
 
 type GameState = 'waiting' | 'ready' | 'clicked' | 'tooEarly' | 'idle';
 
