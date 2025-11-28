@@ -1,235 +1,358 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Black_And_White_Picture } from 'next/font/google';
 
-type GameState = 'waiting' | 'ready' | 'clicked' | 'tooEarly' | 'idle';
+type GameState = 'preparing' | 'waiting' | 'ready' | 'clicked' | 'tooEarly' | 'levelComplete' | 'gameOver';
 
 interface GameStats {
-  currentRound: number;
+  currentLevel: number;
   reactionTime: number | null;
   bestTime: number | null;
-  averageTime: number | null;
-  totalRounds: number;
-  times: number[];
+  levelScore: number;
+  totalScore: number;
+  lives: number;
 }
 
+interface Level {
+  id: number;
+  name: string;
+  minWait: number;
+  maxWait: number;
+  targetTime: number;
+  points: number;
+}
+
+const LEVELS: Level[] = [
+  { id: 1, name: "Level 1", minWait: 2000, maxWait: 4000, targetTime: 600, points: 10 },
+  { id: 2, name: "Level 2", minWait: 1500, maxWait: 3500, targetTime: 550, points: 15 },
+  { id: 3, name: "Level 3", minWait: 1200, maxWait: 3000, targetTime: 500, points: 20 },
+  { id: 4, name: "Level 4", minWait: 1000, maxWait: 2500, targetTime: 450, points: 30 },
+  { id: 5, name: "Level 5", minWait: 800, maxWait: 2000, targetTime: 400, points: 40 },
+  { id: 6, name: "Level 6", minWait: 600, maxWait: 1800, targetTime: 300, points: 50 },
+  { id: 7, name: "Level 7", minWait: 500, maxWait: 1500, targetTime: 280, points: 75 },
+  { id: 8, name: "Level 8", minWait: 400, maxWait: 1200, targetTime: 260, points: 100 },
+  { id: 9, name: "Level 9", minWait: 300, maxWait: 1000, targetTime: 240, points: 150 },
+  { id: 10, name: "Level 10", minWait: 200, maxWait: 800, targetTime: 220, points: 200 }
+];
+
 export default function Game() {
-  const [gameState, setGameState] = useState<GameState>('idle');
+  const [gameState, setGameState] = useState<GameState>('waiting');
   const [startTime, setStartTime] = useState<number>(0);
   const [stats, setStats] = useState<GameStats>({
-    currentRound: 0,
+    currentLevel: 1,
     reactionTime: null,
     bestTime: null,
-    averageTime: null,
-    totalRounds: 0,
-    times: []
+    levelScore: 0,
+    totalScore: 0,
+    lives: 3
   });
+  const [countdown, setCountdown] = useState<number>(0);
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
+  const [shouldAdvanceLevel, setShouldAdvanceLevel] = useState<boolean>(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startGame = useCallback(() => {
-    setGameState('waiting');
-    setStats(prev => ({ ...prev, reactionTime: null }));
-
-    const delay = Math.random() * 4000 + 1000; 
-
-    setTimeout(() => {
-      setStartTime(performance.now());
-      setGameState('ready');
-    }, delay);
+  
+  useEffect(() => {
+    return () => {
+    
+      setCountdown(0);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, []);
 
-  const handleClick = useCallback(() => {
+  useEffect(() => {
+    if (shouldAdvanceLevel && countdown > 0) {
+      if (!intervalRef.current) {
+        intervalRef.current = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              if (intervalRef.current) clearInterval(intervalRef.current);
+              intervalRef.current = null;
+              setShouldAdvanceLevel(false);
+              setStats(current => {
+                if (current.currentLevel < LEVELS.length) {
+                  return { ...current, currentLevel: current.currentLevel + 1, levelScore: 0 };
+                } else {
+                  setGameState('gameOver');
+                  return current;
+                }
+              });
+              startLevel();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [shouldAdvanceLevel, countdown]);
+
+  const currentLevel = LEVELS[stats.currentLevel - 1];
+
+  const startLevel = useCallback(() => {
+    setGameStarted(true);
+    setGameState('waiting');
+    setStats(prev => {
+      const level = LEVELS[prev.currentLevel - 1];
+      const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
+
+      setTimeout(() => {
+        setStartTime(performance.now());
+        setGameState('ready');
+      }, delay);
+      return prev;
+    });
+  }, []);
+
+  const handleClick = useCallback(async () => {
     if (gameState === 'ready') {
       const endTime = performance.now();
       const reactionTime = endTime - startTime;
 
       setStats(prev => {
-        const newTimes = [...prev.times, reactionTime];
-        const bestTime = prev.bestTime ? Math.min(prev.bestTime, reactionTime) : reactionTime;
-        const averageTime = newTimes.reduce((sum, time) => sum + time, 0) / newTimes.length;
+        const level = LEVELS[prev.currentLevel - 1];
+        const isSuccess = reactionTime <= level.targetTime;
 
-        return {
-          ...prev,
-          reactionTime,
-          bestTime,
-          averageTime,
-          totalRounds: prev.totalRounds + 1,
-          currentRound: prev.currentRound + 1,
-          times: newTimes
-        };
+        if (isSuccess) {
+          const points = level.points + Math.max(0, Math.floor((level.targetTime - reactionTime) / 10));
+          
+          
+          const userName = localStorage.getItem('reactionSpeed_userName') || 'Anonymous';
+          fetch('/api/scores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userName,
+              reactionTime,
+              level: prev.currentLevel,
+              score: points
+            })
+          }).catch(error => console.error('Failed to save score:', error));
+
+          fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: userName })
+          }).catch(error => console.error('Failed to save user:', error));
+
+          setGameState('levelComplete');
+          setCountdown(5);
+          setShouldAdvanceLevel(true);
+
+          return {
+            ...prev,
+            reactionTime,
+            bestTime: prev.bestTime ? Math.min(prev.bestTime, reactionTime) : reactionTime,
+            levelScore: prev.levelScore + points,
+            totalScore: prev.totalScore + points
+          };
+        } else {
+        
+          const newLives = prev.lives - 1;
+          if (newLives <= 0) {
+            setGameState('gameOver');
+          } else {
+            setGameState('clicked');
+            setCountdown(5);
+            const penaltyInterval = setInterval(() => {
+              setCountdown(prevCount => {
+                if (prevCount <= 1) {
+                  clearInterval(penaltyInterval);
+                  setTimeout(() => startLevel(), 500);
+                  return 0;
+                }
+                return prevCount - 1;
+              });
+            }, 1000);
+          }
+          return { ...prev, lives: newLives };
+        }
       });
-
-      setGameState('clicked');
     } else if (gameState === 'waiting') {
       setGameState('tooEarly');
-      setTimeout(() => setGameState('idle'), 2000);
+      setCountdown(3);
+      const penaltyInterval = setInterval(() => {
+        setCountdown(prevCount => {
+          if (prevCount <= 1) {
+            clearInterval(penaltyInterval);
+            setTimeout(() => startLevel(), 500);
+            return 0;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
     }
-  }, [gameState, startTime]);
+  }, [gameState, startTime, startLevel]);
 
-  const resetStats = () => {
+  const resetGame = () => {
+    setGameStarted(false);
+    setShouldAdvanceLevel(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setStats({
-      currentRound: 0,
+      currentLevel: 1,
       reactionTime: null,
       bestTime: null,
-      averageTime: null,
-      totalRounds: 0,
-      times: []
+      levelScore: 0,
+      totalScore: 0,
+      lives: 3
     });
-    setGameState('idle');
+    setGameState('waiting');
+    setCountdown(0);
   };
 
   const getBackgroundColor = () => {
     switch (gameState) {
+      case 'preparing': return 'bg-blue-600';
       case 'waiting': return 'bg-red-500';
       case 'ready': return 'bg-green-500';
       case 'clicked': return 'bg-blue-500';
       case 'tooEarly': return 'bg-yellow-500';
+      case 'levelComplete': return 'bg-blue-500';
+      case 'gameOver': return 'bg-gray-700';
       default: return 'bg-gray-400';
     }
   };
 
   const getMessage = () => {
     switch (gameState) {
-      case 'waiting': return 'Wait for green...';
-      case 'ready': return 'CLICK NOW!';
-      case 'clicked': return `${stats.reactionTime?.toFixed(0)}ms`;
-      case 'tooEarly': return 'Too early! Wait for green.';
-      default: return 'Click "Start Round" to begin';
+      case 'preparing': return `${countdown}`;
+      case 'waiting': return 'WAIT';
+      case 'ready': return 'CLICK!';
+      case 'clicked': return countdown > 0 ? `PENALTY: ${countdown}` : 'SLOW!';
+      case 'tooEarly': return countdown > 0 ? `PENALTY: ${countdown}` : 'TOO EARLY!';
+      case 'levelComplete': return countdown > 0 ? `NEXT LEVEL IN ${countdown}` : `LEVEL ${stats.currentLevel} CLEAR!`;
+      case 'gameOver': return stats.lives <= 0 ? '💀 GAME OVER' : '🏆 COMPLETE!';
+      default: return 'READY?';
     }
   };
 
+  const getMessageClass = () => {
+    if (gameState === 'levelComplete' && countdown > 0) {
+      return 'text-8xl font-black mb-4 animate-bounce text-yellow-300';
+    }
+    return 'text-6xl font-black mb-4 animate-pulse';
+  };
+
+  const getReactionDisplay = () => {
+    if (gameState === 'clicked' || gameState === 'levelComplete') {
+      const level = LEVELS[stats.currentLevel - 1];
+      const isSuccess = stats.reactionTime && stats.reactionTime <= level.targetTime;
+      return (
+        <div className="text-center animate-bounce">
+          <div className={`text-7xl font-black mb-2 ${isSuccess ? 'text-green-400 animate-pulse' : 'text-red-400 animate-pulse'}`}>
+            {stats.reactionTime?.toFixed(0)}ms
+          </div>
+          <div className="text-xl text-white font-bold">
+            Target: {level.targetTime}ms
+          </div>
+          <div className={`text-lg font-bold ${isSuccess ? 'text-green-300' : 'text-red-300'}`}>
+            {isSuccess ? `+${level.points} POINTS!` : 'TOO SLOW!'}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-black relative overflow-hidden">
       
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+                    <div className="absolute inset-0">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-red-900/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-10 w-96 h-96 bg-blue-900/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-2000"></div>
+                  <div className="absolute -bottom-8 left-20 w-96 h-96 bg-green-900/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10">
-       
-        <nav className="flex justify-between items-center p-6">
+        
+        <div className="flex justify-between items-center p-6">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-linear-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">⚡</span>
+            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">R</span>
             </div>
-            <span className="text-white font-bold text-xl">ReactionSpeed</span>
+            <span className="text-white font-bold text-xl">LEVEL {stats.currentLevel}</span>
           </Link>
-          <div className="flex space-x-4">
-            <Link href="/" className="text-slate-300 hover:text-white transition-colors">
-              Home
-            </Link>
-            <button
-              onClick={resetStats}
-              className="text-slate-300 hover:text-white transition-colors"
-            >
-              Reset Stats
-            </button>
+          <div className="flex items-center space-x-6 text-white">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-400">{stats.totalScore}</div>
+              <div className="text-xs text-gray-400">SCORE</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-400">{'❤️'.repeat(stats.lives)}</div>
+              <div className="text-xs text-gray-400">LIVES</div>
+            </div>
           </div>
-        </nav>
-
-       
-        <div className="text-center px-4 py-8">
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-4">
-            Reaction Speed Game
-          </h1>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            Test your reflexes! Click as fast as possible when the screen turns green.
-          </p>
         </div>
 
         
-        <div className="flex justify-center px-4 mb-8">
+        <div className="text-center px-4 py-4">
+          <h2 className="text-3xl font-bold text-white mb-2">{currentLevel.name}</h2>
+          <div className="text-sm text-gray-400">
+            Target: {currentLevel.targetTime}ms
+          </div>
+        </div>
+
+       
+        <div className="flex justify-center px-4 py-8">
           <div
-            className={`w-full max-w-2xl h-96 rounded-3xl ${getBackgroundColor()} cursor-pointer flex items-center justify-center text-white text-4xl font-bold transition-all duration-300 shadow-2xl hover:scale-105 active:scale-95`}
+            className={`w-full max-w-2xl h-96 rounded-2xl ${getBackgroundColor()} cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-150 shadow-2xl hover:scale-101 active:scale-98 border-4 border-white/20`}
             onClick={handleClick}
           >
-            {getMessage()}
+            <div className={getMessageClass()}>{getMessage()}</div>
+            {getReactionDisplay()}
           </div>
         </div>
 
-        
-        <div className="max-w-4xl mx-auto px-4 mb-8">
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/10">
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">Your Statistics</h2>
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-black text-green-400 mb-2">
-                  {stats.reactionTime ? `${stats.reactionTime.toFixed(0)}ms` : '--'}
-                </div>
-                <div className="text-white font-semibold mb-1">Last Time</div>
-                <div className="text-slate-400 text-sm">Your previous attempt</div>
+      
+        <div className="flex justify-center px-4 mb-8">
+          {stats.currentLevel === 1 && gameState === 'waiting' && countdown === 0 && !gameStarted && (
+            <button
+              onClick={startLevel}
+              className="px-12 py-6 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-red-400 glow-border"
+            >
+              START LEVEL 1
+            </button>
+          )}
+          {gameState === 'gameOver' && (
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-4">
+                {stats.lives <= 0 ? '💀 GAME OVER' : '🏆 ALL LEVELS COMPLETE!'}
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-black text-blue-400 mb-2">
-                  {stats.bestTime ? `${stats.bestTime.toFixed(0)}ms` : '--'}
-                </div>
-                <div className="text-white font-semibold mb-1">Best Time</div>
-                <div className="text-slate-400 text-sm">Your personal record</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-black text-purple-400 mb-2">
-                  {stats.averageTime ? `${stats.averageTime.toFixed(0)}ms` : '--'}
-                </div>
-                <div className="text-white font-semibold mb-1">Average</div>
-                <div className="text-slate-400 text-sm">Across all attempts</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-black text-orange-400 mb-2">{stats.totalRounds}</div>
-                <div className="text-white font-semibold mb-1">Total Rounds</div>
-                <div className="text-slate-400 text-sm">Games played</div>
-              </div>
+              <div className="text-2xl text-yellow-400 mb-6 font-bold">Final Score: {stats.totalScore}</div>
+              <button
+                onClick={resetGame}
+                className="px-12 py-6 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-green-400"
+              >
+                PLAY AGAIN
+              </button>
             </div>
-          </div>
+          )}
         </div>
 
-       
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4 mb-12">
-          <button
-            onClick={startGame}
-            disabled={gameState === 'waiting' || gameState === 'ready'}
-            className="px-8 py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/25"
-          >
-            {gameState === 'idle' || gameState === 'clicked' || gameState === 'tooEarly' ? '🎮 Start Round' : '⏳ Wait...'}
-          </button>
-          <button
-            onClick={resetStats}
-            className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white text-xl font-bold rounded-2xl transition-all duration-300 hover:scale-105"
-          >
-           Reset Stats
-          </button>
-        </div>
-
-        
-        <div className="max-w-2xl mx-auto px-4 mb-8">
-          <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-            <h3 className="text-lg font-bold text-white mb-4 text-center">How to Play</h3>
-            <div className="space-y-3 text-slate-300">
-              <div className="flex items-start space-x-3">
-                <span className="text-red-400 font-bold">1.</span>
-                <span>Click "Start Round" and wait for the screen to turn red</span>
-              </div>
-              <div className="flex items-start space-x-3">
-                <span className="text-green-400 font-bold">2.</span>
-                <span>When it turns green, click as fast as humanly possible!</span>
-              </div>
-              <div className="flex items-start space-x-3">
-                <span className="text-blue-400 font-bold">3.</span>
-                <span>View your reaction time and keep practicing to improve</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        
         <div className="text-center pb-8">
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors"
+            className="inline-block px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
           >
-            ← Back to Home
+            ← EXIT GAME
           </Link>
         </div>
       </div>
