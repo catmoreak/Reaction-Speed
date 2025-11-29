@@ -180,7 +180,7 @@ export default function Home() {
               Join millions of players worldwide who are competing to be the fastest. Are you ready to claim your spot at the top?
             </p>
             <button onClick={handleGameStart} className="px-12 py-5 bg-linear-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/25 inline-block">
-              🚀 Start Playing Now
+             Start Playing Now
             </button>
           </div>
         </section>
@@ -188,36 +188,7 @@ export default function Home() {
         
       
         
-        <section className="px-4 py-20">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Frequently Asked Questions</h2>
-              <p className="text-xl text-slate-300">Everything you need to know</p>
-            </div>
-
-            <div className="space-y-6">
-              <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-                <h3 className="text-xl font-bold text-white mb-3">How does the game work?</h3>
-                <p className="text-slate-300">Click the screen when it turns green as fast as possible! The game measures your reaction time in milliseconds with ultra-precise timing.</p>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-                <h3 className="text-xl font-bold text-white mb-3">Can I compete with friends?</h3>
-                <p className="text-slate-300">Absolutely! Share your scores and challenge friends to beat your times. We also have global leaderboards for competitive players.</p>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-                <h3 className="text-xl font-bold text-white mb-3">Is this game fair and accurate?</h3>
-                <p className="text-slate-300">Yes! Our game uses professional-grade timing technology that's more accurate than most reaction games available online.</p>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-                <h3 className="text-xl font-bold text-white mb-3">Can I get better at this game?</h3>
-                <p className="text-slate-300">Definitely! Regular gameplay can improve your reaction speed. Many players see significant improvements and climb the leaderboards!</p>
-              </div>
-            </div>
-          </div>
-        </section>
+       
 
         
        
