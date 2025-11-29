@@ -2,13 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import NameInput from '@/components/NameInput';
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
+  const [showNameInput, setShowNameInput] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  const handleGameStart = () => {
+    setShowNameInput(true);
+  };
+
+  const handleNameSubmit = (name: string) => {
+    
+    window.location.href = '/game';
+  };
+
+  if (showNameInput) {
+    return <NameInput onNameSubmit={handleNameSubmit} />;
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
@@ -41,12 +56,12 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link href="/game" className="group px-8 py-4 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-green-500/25 inline-block">
+              <button onClick={handleGameStart} className="group px-8 py-4 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-red-500/25 inline-block animate-float">
                 <span className="flex items-center space-x-2">
                   <span>  Start now </span>
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
-              </Link>
+              </button>
               <button className="px-8 py-4 border-2 border-slate-400 text-slate-300 hover:border-white hover:text-white text-lg font-semibold rounded-2xl transition-all duration-300">
                 View Leaderboard
               </button>
@@ -164,9 +179,9 @@ export default function Home() {
             <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
               Join millions of players worldwide who are competing to be the fastest. Are you ready to claim your spot at the top?
             </p>
-            <Link href="/game" className="px-12 py-5 bg-linear-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/25 inline-block">
+            <button onClick={handleGameStart} className="px-12 py-5 bg-linear-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/25 inline-block">
               🚀 Start Playing Now
-            </Link>
+            </button>
           </div>
         </section>
 

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { networkInterfaces } from 'os';
+import { Flow_Block, Sacramento } from 'next/font/google';
 
 type GameState = 'preparing' | 'waiting' | 'ready' | 'clicked' | 'tooEarly' | 'levelComplete' | 'gameOver';
 
@@ -51,15 +53,19 @@ export default function Game() {
   const [gameStarted, setGameStarted] = useState<boolean>(false);
   const [shouldAdvanceLevel, setShouldAdvanceLevel] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const penaltyIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   
   useEffect(() => {
     return () => {
-    
       setCountdown(0);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
+      }
+      if (penaltyIntervalRef.current) {
+        clearInterval(penaltyIntervalRef.current);
+        penaltyIntervalRef.current = null;
       }
     };
   }, []);
@@ -105,7 +111,6 @@ export default function Game() {
   const currentLevel = LEVELS[stats.currentLevel - 1];
 
   const startLevel = useCallback(() => {
-    setGameStarted(true);
     setGameState('waiting');
     setStats(prev => {
       const level = LEVELS[prev.currentLevel - 1];
@@ -130,14 +135,13 @@ export default function Game() {
 
         if (isSuccess) {
           const points = level.points + Math.max(0, Math.floor((level.targetTime - reactionTime) / 10));
-          
-          
-          const userName = localStorage.getItem('reactionSpeed_userName') || 'Anonymous';
+    
+          const playerName = localStorage.getItem('reactionSpeed_userName') || 'Anonymous';
           fetch('/api/scores', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              userName,
+              userName: playerName,
               reactionTime,
               level: prev.currentLevel,
               score: points
@@ -147,7 +151,7 @@ export default function Game() {
           fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: userName })
+            body: JSON.stringify({ name: playerName })
           }).catch(error => console.error('Failed to save user:', error));
 
           setGameState('levelComplete');
@@ -325,8 +329,8 @@ export default function Game() {
         <div className="flex justify-center px-4 mb-8">
           {stats.currentLevel === 1 && gameState === 'waiting' && countdown === 0 && !gameStarted && (
             <button
-              onClick={startLevel}
-              className="px-12 py-6 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-red-400 glow-border"
+              onClick={() => { setGameStarted(true); startLevel(); }}
+              className="px-12 py-6 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-red-400 glow-border animate-float"
             >
               START LEVEL 1
             </button>
@@ -357,5 +361,4 @@ export default function Game() {
         </div>
       </div>
     </div>
-  );
-}
+  ); }
