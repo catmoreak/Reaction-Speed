@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { networkInterfaces } from 'os';
-import { Flow_Block, Sacramento } from 'next/font/google';
 
 type GameState = 'preparing' | 'waiting' | 'ready' | 'clicked' | 'tooEarly' | 'levelComplete' | 'gameOver';
 
@@ -70,6 +68,28 @@ export default function Game() {
     };
   }, []);
 
+  const startLevel = useCallback(() => {
+    setGameState('waiting');
+    setStats(prev => {
+      const level = LEVELS[prev.currentLevel - 1];
+      const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
+
+      setTimeout(() => {
+        setStartTime(performance.now());
+        setGameState('ready');
+      }, delay);
+
+      const newBestTime = prev.reactionTime && (!prev.bestTime || prev.reactionTime < prev.bestTime) 
+        ? prev.reactionTime 
+        : prev.bestTime;
+      
+      return {
+        ...prev,
+        bestTime: newBestTime
+      };
+    });
+  }, []);
+
   useEffect(() => {
     if (shouldAdvanceLevel && countdown > 0) {
       if (!intervalRef.current) {
@@ -106,25 +126,16 @@ export default function Game() {
         intervalRef.current = null;
       }
     };
-  }, [shouldAdvanceLevel, countdown]);
+  }, [shouldAdvanceLevel, countdown, startLevel]);
 
   const currentLevel = LEVELS[stats.currentLevel - 1];
 
-  const startLevel = useCallback(() => {
-    setGameState('waiting');
-    setStats(prev => {
-      const level = LEVELS[prev.currentLevel - 1];
-      const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
-
-      setTimeout(() => {
-        setStartTime(performance.now());
-        setGameState('ready');
-      }, delay);
-      return prev;
-    });
-  }, []);
-
   const handleClick = useCallback(async () => {
+    
+    if (gameState === 'levelComplete' || gameState === 'gameOver') {
+      return;
+    }
+    
     if (gameState === 'ready') {
       const endTime = performance.now();
       const reactionTime = endTime - startTime;
@@ -154,9 +165,13 @@ export default function Game() {
             body: JSON.stringify({ name: playerName })
           }).catch(error => console.error('Failed to save user:', error));
 
+        
           setGameState('levelComplete');
-          setCountdown(5);
-          setShouldAdvanceLevel(true);
+         
+          setTimeout(() => {
+            setCountdown(3);
+            setShouldAdvanceLevel(true);
+          }, 2000);
 
           return {
             ...prev,
@@ -173,16 +188,19 @@ export default function Game() {
           } else {
             setGameState('clicked');
             setCountdown(5);
-            const penaltyInterval = setInterval(() => {
-              setCountdown(prevCount => {
-                if (prevCount <= 1) {
-                  clearInterval(penaltyInterval);
-                  setTimeout(() => startLevel(), 500);
-                  return 0;
-                }
-                return prevCount - 1;
-              });
-            }, 1000);
+            if (!penaltyIntervalRef.current) {
+              penaltyIntervalRef.current = setInterval(() => {
+                setCountdown(prevCount => {
+                  if (prevCount <= 1) {
+                    if (penaltyIntervalRef.current) clearInterval(penaltyIntervalRef.current);
+                    penaltyIntervalRef.current = null;
+                    setTimeout(() => startLevel(), 500);
+                    return 0;
+                  }
+                  return prevCount - 1;
+                });
+              }, 1000);
+            }
           }
           return { ...prev, lives: newLives };
         }
@@ -229,7 +247,7 @@ export default function Game() {
       case 'ready': return 'bg-green-500';
       case 'clicked': return 'bg-blue-500';
       case 'tooEarly': return 'bg-yellow-500';
-      case 'levelComplete': return 'bg-blue-500';
+      case 'levelComplete': return countdown > 0 ? 'bg-blue-600' : 'bg-green-500';
       case 'gameOver': return 'bg-gray-700';
       default: return 'bg-gray-400';
     }
@@ -240,35 +258,46 @@ export default function Game() {
       case 'preparing': return `${countdown}`;
       case 'waiting': return 'WAIT';
       case 'ready': return 'CLICK!';
-      case 'clicked': return countdown > 0 ? `PENALTY: ${countdown}` : 'SLOW!';
+      case 'clicked': return countdown > 0 ? `PENALTY: ${countdown}` : 'TOO SLOW! TRY AGAIN';
       case 'tooEarly': return countdown > 0 ? `PENALTY: ${countdown}` : 'TOO EARLY!';
-      case 'levelComplete': return countdown > 0 ? `NEXT LEVEL IN ${countdown}` : `LEVEL ${stats.currentLevel} CLEAR!`;
-      case 'gameOver': return stats.lives <= 0 ? '💀 GAME OVER' : '🏆 COMPLETE!';
+      case 'levelComplete': 
+        if (countdown > 0) {
+          return `LOADING LEVEL ${stats.currentLevel + 1}...${countdown}`;
+        } else {
+          return stats.currentLevel >= LEVELS.length ? '🏆 CHAMPION!' : `LEVEL ${stats.currentLevel} COMPLETE!`;
+        }
+      case 'gameOver': return stats.lives <= 0 ? '💀 GAME OVER' : '🏆 ALL LEVELS COMPLETE!';
       default: return 'READY?';
     }
   };
 
   const getMessageClass = () => {
-    if (gameState === 'levelComplete' && countdown > 0) {
-      return 'text-8xl font-black mb-4 animate-bounce text-yellow-300';
+    if (gameState === 'levelComplete') {
+      if (countdown > 0) {
+        return 'text-6xl font-black mb-4 animate-bounce text-yellow-300';
+      } else {
+        return 'text-5xl font-black mb-4 animate-pulse text-green-300 bg-green-500/20 px-6 py-3 rounded-2xl';
+      }
     }
     return 'text-6xl font-black mb-4 animate-pulse';
   };
 
   const getReactionDisplay = () => {
-    if (gameState === 'clicked' || gameState === 'levelComplete') {
+    if (gameState === 'levelComplete' && countdown === 0 && stats.reactionTime) {
       const level = LEVELS[stats.currentLevel - 1];
-      const isSuccess = stats.reactionTime && stats.reactionTime <= level.targetTime;
+      const isSuccess = stats.reactionTime <= level.targetTime;
+      const points = Math.floor(level.points + Math.max(0, Math.floor((level.targetTime - stats.reactionTime) / 10)));
+      
       return (
         <div className="text-center animate-bounce">
           <div className={`text-7xl font-black mb-2 ${isSuccess ? 'text-green-400 animate-pulse' : 'text-red-400 animate-pulse'}`}>
-            {stats.reactionTime?.toFixed(0)}ms
+            {stats.reactionTime.toFixed(0)}ms
           </div>
           <div className="text-xl text-white font-bold">
             Target: {level.targetTime}ms
           </div>
           <div className={`text-lg font-bold ${isSuccess ? 'text-green-300' : 'text-red-300'}`}>
-            {isSuccess ? `+${level.points} POINTS!` : 'TOO SLOW!'}
+            {isSuccess ? `EXCELLENT! +${points} POINTS!` : 'TOO SLOW!'}
           </div>
         </div>
       );
@@ -361,4 +390,5 @@ export default function Game() {
         </div>
       </div>
     </div>
-  ); }
+  );
+}

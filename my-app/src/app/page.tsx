@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import NameInput from '@/components/NameInput';
 
 export default function Home() {
@@ -9,14 +8,15 @@ export default function Home() {
   const [showNameInput, setShowNameInput] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleGameStart = () => {
     setShowNameInput(true);
   };
 
-  const handleNameSubmit = (name: string) => {
+  const handleNameSubmit = () => {
     
     window.location.href = '/game';
   };
@@ -109,7 +109,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Competitive Leaderboards</h3>
                 <p className="text-slate-300 leading-relaxed">
-                  Battle friends and players worldwide. Climb the ranks and prove you're the fastest gamer alive!
+                  Battle friends and players worldwide. Climb the ranks and prove you&apos;re the fastest gamer alive!
                 </p>
               </div>
             </div>
@@ -186,13 +186,6 @@ export default function Home() {
         </section>
 
         
-      
-        
-       
-
-        
-       
-
         
         <footer className="px-4 py-16 bg-black/40 border-t border-white/10">
           <div className="max-w-6xl mx-auto">

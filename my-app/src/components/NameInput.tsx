@@ -1,6 +1,5 @@
 'use client';
 
-import { NestedMiddlewareError } from 'next/dist/build/utils';
 import { useState, useEffect } from 'react';
 
 interface NameInputProps {
@@ -14,8 +13,11 @@ export default function NameInput({ onNameSubmit }: NameInputProps) {
   useEffect(() => {
     const saved = localStorage.getItem('reactionSpeed_userName');
     if (saved) {
-      setSavedName(saved);
-      setUserName(saved);
+      const timer = setTimeout(() => {
+        setSavedName(saved);
+        setUserName(saved);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, []);
 
