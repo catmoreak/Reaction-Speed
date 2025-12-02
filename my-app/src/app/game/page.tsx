@@ -50,6 +50,8 @@ export default function Game() {
   const [countdown, setCountdown] = useState<number>(0);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
   const [shouldAdvanceLevel, setShouldAdvanceLevel] = useState<boolean>(false);
+  const [completedLevel, setCompletedLevel] = useState<number>(0);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const penaltyIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -99,15 +101,18 @@ export default function Game() {
               if (intervalRef.current) clearInterval(intervalRef.current);
               intervalRef.current = null;
               setShouldAdvanceLevel(false);
+            
               setStats(current => {
-                if (current.currentLevel < LEVELS.length) {
-                  return { ...current, currentLevel: current.currentLevel + 1, levelScore: 0 };
+                const newLevel = current.currentLevel + 1;
+                if (newLevel <= LEVELS.length) {
+                 
+                  setTimeout(() => startLevel(), 100);
+                  return { ...current, currentLevel: newLevel, levelScore: 0 };
                 } else {
                   setGameState('gameOver');
                   return current;
                 }
               });
-              startLevel();
               return 0;
             }
             return prev - 1;
@@ -165,13 +170,15 @@ export default function Game() {
             body: JSON.stringify({ name: playerName })
           }).catch(error => console.error('Failed to save user:', error));
 
-        
+          
+          setCompletedLevel(prev.currentLevel);
           setGameState('levelComplete');
          
           setTimeout(() => {
-            setCountdown(3);
+            setCountdown(2);
             setShouldAdvanceLevel(true);
-          }, 2000);
+            setIsProcessing(false);
+          }, 1500);
 
           return {
             ...prev,
@@ -181,7 +188,8 @@ export default function Game() {
             totalScore: prev.totalScore + points
           };
         } else {
-        
+         
+          setIsProcessing(false);
           const newLives = prev.lives - 1;
           if (newLives <= 0) {
             setGameState('gameOver');
@@ -219,11 +227,13 @@ export default function Game() {
         });
       }, 1000);
     }
-  }, [gameState, startTime, startLevel]);
+  }, [gameState, startTime, startLevel, isProcessing]);
 
   const resetGame = () => {
     setGameStarted(false);
     setShouldAdvanceLevel(false);
+    setCompletedLevel(0);
+    setIsProcessing(false);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -247,7 +257,7 @@ export default function Game() {
       case 'ready': return 'bg-green-500';
       case 'clicked': return 'bg-blue-500';
       case 'tooEarly': return 'bg-yellow-500';
-      case 'levelComplete': return countdown > 0 ? 'bg-blue-600' : 'bg-green-500';
+      case 'levelComplete': return countdown > 0 ? 'bg-gradient-to-br from-purple-600 to-blue-700' : 'bg-gradient-to-br from-green-500 to-emerald-600';
       case 'gameOver': return 'bg-gray-700';
       default: return 'bg-gray-400';
     }
@@ -262,9 +272,12 @@ export default function Game() {
       case 'tooEarly': return countdown > 0 ? `PENALTY: ${countdown}` : 'TOO EARLY!';
       case 'levelComplete': 
         if (countdown > 0) {
-          return `LOADING LEVEL ${stats.currentLevel + 1}...${countdown}`;
+          
+          const nextLevel = stats.currentLevel < LEVELS.length ? stats.currentLevel + 1 : stats.currentLevel;
+          return `NEXT: LEVEL ${nextLevel} IN ${countdown}`;
         } else {
-          return stats.currentLevel >= LEVELS.length ? '🏆 CHAMPION!' : `LEVEL ${stats.currentLevel} COMPLETE!`;
+         
+          return completedLevel >= LEVELS.length ? '🏆 ALL COMPLETE!' : `✅ LEVEL ${completedLevel} CLEARED!`;
         }
       case 'gameOver': return stats.lives <= 0 ? '💀 GAME OVER' : '🏆 ALL LEVELS COMPLETE!';
       default: return 'READY?';
@@ -274,9 +287,9 @@ export default function Game() {
   const getMessageClass = () => {
     if (gameState === 'levelComplete') {
       if (countdown > 0) {
-        return 'text-6xl font-black mb-4 animate-bounce text-yellow-300';
+        return 'text-5xl font-black mb-4 animate-pulse text-white bg-white/10 backdrop-blur-sm px-8 py-4 rounded-3xl border border-white/20 shadow-2xl';
       } else {
-        return 'text-5xl font-black mb-4 animate-pulse text-green-300 bg-green-500/20 px-6 py-3 rounded-2xl';
+        return 'text-5xl font-black mb-4 animate-pulse text-white bg-green-500/30 backdrop-blur-sm px-8 py-4 rounded-3xl border border-green-300/30 shadow-2xl';
       }
     }
     return 'text-6xl font-black mb-4 animate-pulse';
