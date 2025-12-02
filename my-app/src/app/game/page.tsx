@@ -24,16 +24,11 @@ interface Level {
 }
 
 const LEVELS: Level[] = [
-  { id: 1, name: "Level 1", minWait: 2000, maxWait: 4000, targetTime: 600, points: 10 },
-  { id: 2, name: "Level 2", minWait: 1500, maxWait: 3500, targetTime: 550, points: 15 },
-  { id: 3, name: "Level 3", minWait: 1200, maxWait: 3000, targetTime: 500, points: 20 },
-  { id: 4, name: "Level 4", minWait: 1000, maxWait: 2500, targetTime: 450, points: 30 },
-  { id: 5, name: "Level 5", minWait: 800, maxWait: 2000, targetTime: 400, points: 40 },
-  { id: 6, name: "Level 6", minWait: 600, maxWait: 1800, targetTime: 300, points: 50 },
-  { id: 7, name: "Level 7", minWait: 500, maxWait: 1500, targetTime: 280, points: 75 },
-  { id: 8, name: "Level 8", minWait: 400, maxWait: 1200, targetTime: 260, points: 100 },
-  { id: 9, name: "Level 9", minWait: 300, maxWait: 1000, targetTime: 240, points: 150 },
-  { id: 10, name: "Level 10", minWait: 200, maxWait: 800, targetTime: 220, points: 200 }
+  { id: 1, name: "Level 1", minWait: 2000, maxWait: 4000, targetTime: 800, points: 20 },
+  { id: 2, name: "Level 2", minWait: 1200, maxWait: 3000, targetTime: 600, points: 50 },
+  { id: 3, name: "Level 3", minWait: 800, maxWait: 2200, targetTime: 400, points: 100 },
+  { id: 4, name: "Level 4", minWait: 500, maxWait: 1500, targetTime: 250, points: 200 },
+  { id: 5, name: "Level 5", minWait: 300, maxWait: 1000, targetTime: 180, points: 350 }
 ];
 
 export default function Game() {
@@ -54,6 +49,8 @@ export default function Game() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const penaltyIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const processingRef = useRef<boolean>(false);
+  const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   
   useEffect(() => {
@@ -62,27 +59,38 @@ export default function Game() {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
-      }
+          }
       if (penaltyIntervalRef.current) {
         clearInterval(penaltyIntervalRef.current);
         penaltyIntervalRef.current = null;
+  }
+      if (waitingTimeoutRef.current) {
+        clearTimeout(waitingTimeoutRef.current);
+    waitingTimeoutRef.current = null;
       }
     };
   }, []);
 
   const startLevel = useCallback(() => {
+    
+    if (waitingTimeoutRef.current) {
+      clearTimeout(waitingTimeoutRef.current);
+      waitingTimeoutRef.current = null;
+    }
+    
     setGameState('waiting');
     setStats(prev => {
       const level = LEVELS[prev.currentLevel - 1];
-      const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
+   const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
 
-      setTimeout(() => {
-        setStartTime(performance.now());
+      waitingTimeoutRef.current = setTimeout(() => {
+   setStartTime(performance.now());
         setGameState('ready');
+        waitingTimeoutRef.current = null;
       }, delay);
 
       const newBestTime = prev.reactionTime && (!prev.bestTime || prev.reactionTime < prev.bestTime) 
-        ? prev.reactionTime 
+    ? prev.reactionTime 
         : prev.bestTime;
       
       return {
@@ -98,21 +106,27 @@ export default function Game() {
         intervalRef.current = setInterval(() => {
           setCountdown(prev => {
             if (prev <= 1) {
-              if (intervalRef.current) clearInterval(intervalRef.current);
+        if (intervalRef.current) clearInterval(intervalRef.current);
               intervalRef.current = null;
-              setShouldAdvanceLevel(false);
+         setShouldAdvanceLevel(false);
             
-              setStats(current => {
-                const newLevel = current.currentLevel + 1;
-                if (newLevel <= LEVELS.length) {
-                 
-                  setTimeout(() => startLevel(), 100);
-                  return { ...current, currentLevel: newLevel, levelScore: 0 };
-                } else {
-                  setGameState('gameOver');
-                  return current;
-                }
-              });
+           
+  setTimeout(() => {
+      setStats(current => {
+           const newLevel = current.currentLevel + 1;
+                  if (newLevel <= LEVELS.length && current.currentLevel === stats.currentLevel) {
+                    setTimeout(() => {
+                      startLevel();
+                    }, 50);
+                    return { ...current, currentLevel: newLevel, levelScore: 0 };
+                  } else if (newLevel > LEVELS.length) {
+                    setGameState('gameOver');
+                    return current;
+                  } else {
+                    return current;
+                  }
+                });
+              }, 50);
               return 0;
             }
             return prev - 1;
@@ -136,18 +150,21 @@ export default function Game() {
   const currentLevel = LEVELS[stats.currentLevel - 1];
 
   const handleClick = useCallback(async () => {
-    
-    if (gameState === 'levelComplete' || gameState === 'gameOver') {
+    if (gameState === 'levelComplete' || gameState === 'gameOver' || processingRef.current) {
       return;
     }
     
     if (gameState === 'ready') {
+      processingRef.current = true;
       const endTime = performance.now();
       const reactionTime = endTime - startTime;
 
       setStats(prev => {
         const level = LEVELS[prev.currentLevel - 1];
-        const isSuccess = reactionTime <= level.targetTime;
+       
+        
+        const graceTime = reactionTime < 100 ? level.targetTime + 200 : level.targetTime;
+        const isSuccess = reactionTime <= graceTime;
 
         if (isSuccess) {
           const points = level.points + Math.max(0, Math.floor((level.targetTime - reactionTime) / 10));
@@ -155,9 +172,9 @@ export default function Game() {
           const playerName = localStorage.getItem('reactionSpeed_userName') || 'Anonymous';
           fetch('/api/scores', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              userName: playerName,
+          userName: playerName,
               reactionTime,
               level: prev.currentLevel,
               score: points
@@ -170,26 +187,25 @@ export default function Game() {
             body: JSON.stringify({ name: playerName })
           }).catch(error => console.error('Failed to save user:', error));
 
-          
           setCompletedLevel(prev.currentLevel);
-          setGameState('levelComplete');
-         
+       setGameState('levelComplete');
           setTimeout(() => {
             setCountdown(2);
-            setShouldAdvanceLevel(true);
+      setShouldAdvanceLevel(true);
             setIsProcessing(false);
+            processingRef.current = false;
           }, 1500);
 
           return {
-            ...prev,
+        ...prev,
             reactionTime,
             bestTime: prev.bestTime ? Math.min(prev.bestTime, reactionTime) : reactionTime,
-            levelScore: prev.levelScore + points,
+        levelScore: prev.levelScore + points,
             totalScore: prev.totalScore + points
           };
         } else {
-         
           setIsProcessing(false);
+          processingRef.current = false;
           const newLives = prev.lives - 1;
           if (newLives <= 0) {
             setGameState('gameOver');
@@ -199,7 +215,7 @@ export default function Game() {
             if (!penaltyIntervalRef.current) {
               penaltyIntervalRef.current = setInterval(() => {
                 setCountdown(prevCount => {
-                  if (prevCount <= 1) {
+              if (prevCount <= 1) {
                     if (penaltyIntervalRef.current) clearInterval(penaltyIntervalRef.current);
                     penaltyIntervalRef.current = null;
                     setTimeout(() => startLevel(), 500);
@@ -218,7 +234,7 @@ export default function Game() {
       setCountdown(3);
       const penaltyInterval = setInterval(() => {
         setCountdown(prevCount => {
-          if (prevCount <= 1) {
+      if (prevCount <= 1) {
             clearInterval(penaltyInterval);
             setTimeout(() => startLevel(), 500);
             return 0;
