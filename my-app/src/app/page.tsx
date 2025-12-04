@@ -72,55 +72,13 @@ export default function Home() {
           </div>
         </div>
 
-        
-        <section id="features" className="px-4 py-20">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Why Play ReactionSpeed?</h2>
-              <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-                The ultimate reaction speed game designed for competitive players
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="group bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-105">
-                <div className="w-16 h-16 bg-linear-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl">🎯</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Lightning Fast Action</h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Experience the thrill of split-second decisions. Every millisecond counts in this intense reaction challenge.
-                </p>
-              </div>
-
-              <div className="group bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-105">
-                <div className="w-16 h-16 bg-linear-to-r from-green-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Pro-Level Stats</h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Track your scores, analyze your performance, and watch your reaction speed improve with detailed gaming stats.
-                </p>
-              </div>
-
-              <div className="group bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-105">
-                <div className="w-16 h-16 bg-linear-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl">🏆</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Competitive Leaderboards</h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Battle friends and players worldwide. Climb the ranks and prove you&apos;re the fastest gamer alive!
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+      
 
         
         <section id="how-to-play" className="px-4 py-20 bg-black/20">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">How to Play</h2>
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">How to Play</h2>
               <p className="text-xl text-slate-300">Simple rules, endless challenge</p>
             </div>
 
