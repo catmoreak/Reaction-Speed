@@ -187,83 +187,11 @@ export default function Home() {
 
         
         
-        <footer className="px-4 py-16 bg-black/40 border-t border-white/10">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-4 gap-8 mb-8">
-              
-              <div className="md:col-span-1">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="w-10 h-10 bg-linear-to-r from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">⚡</span>
-                  </div>
-                  <span className="text-white font-bold text-2xl">ReactionSpeed</span>
-                </div>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  The ultimate reaction speed gaming platform.
-                  Challenge yourself and compete with players worldwide.
-                </p>
-                
-              </div>
-
-              
-              <div>
-                <h3 className="text-white font-bold text-lg mb-4">Quick Links</h3>
-                <ul className="space-y-3">
-                  <li><a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
-                  <li><a href="#how-to-play" className="text-slate-400 hover:text-white transition-colors">How to Play</a></li>
-                  <li><a href="#stats" className="text-slate-400 hover:text-white transition-colors">Statistics</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Leaderboards</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Tournaments</a></li>
-                </ul>
-              </div>
-
-              
-              <div>
-                <h3 className="text-white font-bold text-lg mb-4">Support</h3>
-                <ul className="space-y-3">
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Help Center</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Terms of Service</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">FAQ</a></li>
-                </ul>
-              </div>
-
-              
-              <div>
-                <h3 className="text-white font-bold text-lg mb-4">Community</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Active Players</span>
-                    
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Tests Taken</span>
-                   
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">World Records</span>
-                    
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Countries</span>
-                    
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            
-            <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center">
-              <p className="text-slate-400 text-sm mb-4 md:mb-0">
-                © 2025 ReactionSpeed. Built with ❤️</p> 
-              <div className="flex space-x-6 text-sm">
-                <a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy</a>
-                <a href="#" className="text-slate-400 hover:text-white transition-colors">Terms</a>
-                <a href="#" className="text-slate-400 hover:text-white transition-colors">Cookies</a>
-                <a href="#" className="text-slate-400 hover:text-white transition-colors">Accessibility</a>
-              </div>
-            </div>
+        <footer className="px-4 py-8 bg-black/40 border-t border-white/10">
+          <div className="max-w-6xl mx-auto text-center">
+            <p className="text-slate-400 text-sm">
+              © 2025 ReactionSpeed. Built with ❤️
+            </p>
           </div>
         </footer>
       </div>

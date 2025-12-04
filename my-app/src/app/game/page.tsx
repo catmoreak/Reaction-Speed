@@ -412,9 +412,9 @@ export default function Game() {
         <div className="text-center pb-8">
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+            className="text-gray-400 hover:text-white transition-colors text-sm"
           >
-            ← EXIT GAME
+            ← Back to Home
           </Link>
         </div>
       </div>
