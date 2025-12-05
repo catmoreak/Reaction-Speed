@@ -2,6 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { Arsenal, Exo_2 } from 'next/font/google';
+import { RSC_ACTION_CLIENT_WRAPPER_ALIAS } from 'next/dist/lib/constants';
+import { markAsUntransferable } from 'worker_threads';
+import { waitForDebugger } from 'inspector';
+import { projectEntrypointsSubscribe } from 'next/dist/build/swc/generated-native';
 
 type GameState = 'preparing' | 'waiting' | 'ready' | 'clicked' | 'tooEarly' | 'levelComplete' | 'gameOver';
 
@@ -115,9 +120,9 @@ export default function Game() {
       setStats(current => {
            const newLevel = current.currentLevel + 1;
                   if (newLevel <= LEVELS.length && current.currentLevel === stats.currentLevel) {
-                    setTimeout(() => {
-                      startLevel();
-                    }, 50);
+               setTimeout(() => {
+                 startLevel();
+                }, 50);
                     return { ...current, currentLevel: newLevel, levelScore: 0 };
                   } else if (newLevel > LEVELS.length) {
                     setGameState('gameOver');
@@ -126,7 +131,7 @@ export default function Game() {
                     return current;
                   }
                 });
-              }, 50);
+            }, 50);
               return 0;
             }
             return prev - 1;
@@ -163,7 +168,7 @@ export default function Game() {
         const level = LEVELS[prev.currentLevel - 1];
        
         
-        const graceTime = reactionTime < 100 ? level.targetTime + 200 : level.targetTime;
+        const graceTime = reactionTime < 150 ? level.targetTime + 250 : level.targetTime + 50;
         const isSuccess = reactionTime <= graceTime;
 
         if (isSuccess) {
@@ -190,11 +195,14 @@ export default function Game() {
           setCompletedLevel(prev.currentLevel);
        setGameState('levelComplete');
           setTimeout(() => {
-            setCountdown(2);
+            setCountdown(3);
       setShouldAdvanceLevel(true);
+          }, 2500);
+          
+          setTimeout(() => {
             setIsProcessing(false);
             processingRef.current = false;
-          }, 1500);
+          }, 5500);
 
           return {
         ...prev,
@@ -206,7 +214,7 @@ export default function Game() {
         } else {
           setIsProcessing(false);
           processingRef.current = false;
-          const newLives = prev.lives - 1;
+          const newLives = Math.max(0, prev.lives - 1);
           if (newLives <= 0) {
             setGameState('gameOver');
           } else {
@@ -303,9 +311,9 @@ export default function Game() {
   const getMessageClass = () => {
     if (gameState === 'levelComplete') {
       if (countdown > 0) {
-        return 'text-5xl font-black mb-4 animate-pulse text-white bg-white/10 backdrop-blur-sm px-8 py-4 rounded-3xl border border-white/20 shadow-2xl';
+        return 'text-7xl md:text-8xl font-black mb-8 animate-pulse text-white';
       } else {
-        return 'text-5xl font-black mb-4 animate-pulse text-white bg-green-500/30 backdrop-blur-sm px-8 py-4 rounded-3xl border border-green-300/30 shadow-2xl';
+        return 'text-7xl md:text-8xl font-black mb-8 animate-bounce text-white';
       }
     }
     return 'text-6xl font-black mb-4 animate-pulse';
@@ -318,15 +326,15 @@ export default function Game() {
       const points = Math.floor(level.points + Math.max(0, Math.floor((level.targetTime - stats.reactionTime) / 10)));
       
       return (
-        <div className="text-center animate-bounce">
-          <div className={`text-7xl font-black mb-2 ${isSuccess ? 'text-green-400 animate-pulse' : 'text-red-400 animate-pulse'}`}>
+        <div className="text-center">
+          <div className={`text-9xl md:text-[12rem] font-black mb-6 text-white animate-pulse`}>
             {stats.reactionTime.toFixed(0)}ms
           </div>
-          <div className="text-xl text-white font-bold">
+          <div className="text-3xl md:text-4xl text-white/80 font-bold mb-4">
             Target: {level.targetTime}ms
           </div>
-          <div className={`text-lg font-bold ${isSuccess ? 'text-green-300' : 'text-red-300'}`}>
-            {isSuccess ? `EXCELLENT! +${points} POINTS!` : 'TOO SLOW!'}
+          <div className={`text-4xl md:text-5xl font-black text-white`}>
+            {isSuccess ? `PERFECT ! +${points} POINTS!` : '❌ TOO SLOW!'}
           </div>
         </div>
       );
@@ -358,7 +366,7 @@ export default function Game() {
               <div className="text-xs text-gray-400">SCORE</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-400">{'❤️'.repeat(stats.lives)}</div>
+              <div className="text-2xl font-bold text-red-400">{'❤️'.repeat(Math.max(0, stats.lives))}</div>
               <div className="text-xs text-gray-400">LIVES</div>
             </div>
           </div>
@@ -373,52 +381,89 @@ export default function Game() {
         </div>
 
        
-        <div className="flex justify-center px-4 py-8">
-          <div
-            className={`w-full max-w-2xl h-96 rounded-2xl ${getBackgroundColor()} cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-150 shadow-2xl hover:scale-101 active:scale-98 border-4 border-white/20`}
-            onClick={handleClick}
-          >
-            <div className={getMessageClass()}>{getMessage()}</div>
-            {getReactionDisplay()}
+        {gameState === 'levelComplete' ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-linear-to-br from-green-500 to-emerald-600">
+            <div className="text-center">
+              <div className={getMessageClass()}>{getMessage()}</div>
+              {getReactionDisplay()}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex justify-center px-4 py-8">
+            <div
+              className={`w-full max-w-2xl h-96 rounded-2xl ${getBackgroundColor()} cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-150 shadow-2xl hover:scale-101 active:scale-98 border-4 border-white/20`}
+              onClick={handleClick}
+            >
+              <div className={getMessageClass()}>{getMessage()}</div>
+              {getReactionDisplay()}
+            </div>
+          </div>
+        )}
 
       
         <div className="flex justify-center px-4 mb-8">
           {stats.currentLevel === 1 && gameState === 'waiting' && countdown === 0 && !gameStarted && (
             <button
               onClick={() => { setGameStarted(true); startLevel(); }}
-              className="px-12 py-6 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-red-400 glow-border animate-float"
+          className="px-12 py-6 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-red-400 glow-border animate-float"
             >
               START LEVEL 1
             </button>
           )}
           {gameState === 'gameOver' && (
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-4">
-                {stats.lives <= 0 ? '💀 GAME OVER' : '🏆 ALL LEVELS COMPLETE!'}
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-linear-to-br from-purple-900 via-blue-900 to-black">
+              <div className="text-center max-w-2xl px-8">
+                {stats.lives <= 0 ? (
+                  <>
+                    <div className="text-9xl mb-8 animate-pulse">💀</div>
+                    <div className="text-7xl md:text-8xl font-black text-white mb-8 animate-bounce">
+                      GAME OVER
+                    </div>
+                    <div className="text-3xl text-red-400 mb-4 font-bold">Better Luck Next Time!</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-7xl mb-8 animate-bounce">🏆</div>
+                    <div className="text-7xl md:text-8xl font-black bg-linear-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-8 animate-pulse">
+                      VICTORY!
+                    </div>
+                    <div className="text-4xl text-green-400 mb-4 font-bold">All Levels Conquered!</div>
+                  </>
+                )}
+                <div className="my-12 p-8 bg-white/10 backdrop-blur-lg rounded-3xl border-2 border-white/20">
+                  <div className="text-2xl text-white/80 mb-2">Final Score</div>
+                  <div className="text-8xl font-black text-yellow-400 animate-pulse">{stats.totalScore}</div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
+                  <button
+                    onClick={resetGame}
+                    className="px-16 py-6 bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-2xl font-black rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-green-400"
+                  >
+                    PLAY AGAIN
+                  </button>
+                  <Link
+                    href="/"
+                    className="px-16 py-6 bg-white/10 hover:bg-white/20 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 border-2 border-white/30"
+                  >
+                   HOME
+                  </Link>
+                </div>
               </div>
-              <div className="text-2xl text-yellow-400 mb-6 font-bold">Final Score: {stats.totalScore}</div>
-              <button
-                onClick={resetGame}
-                className="px-12 py-6 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-green-400"
-              >
-                PLAY AGAIN
-              </button>
             </div>
           )}
         </div>
 
-        <div className="text-center pb-8">
-          <Link
-            href="/"
-            className="text-gray-400 hover:text-white transition-colors text-sm"
-          >
-            ← Back to Home
-          </Link>
-        </div>
+        {gameState !== 'gameOver' && (
+          <div className="text-center pb-8">
+            <Link
+              href="/"
+              className="text-gray-400 hover:text-white transition-colors text-sm"
+            >
+              ← Back to Home
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
