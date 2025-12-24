@@ -79,26 +79,25 @@ export default function ThemedGame() {
     setCountdown(0);
     setShouldAdvanceLevel(false);
     setGameState('waiting');
-    setStats(prev => {
-      const level = LEVELS[prev.currentLevel - 1];
-      const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
 
-      waitingTimeoutRef.current = setTimeout(() => {
-        setStartTime(performance.now());
-        setGameState('ready');
-        waitingTimeoutRef.current = null;
-      }, delay);
+    
+    const level = LEVELS[stats.currentLevel - 1];
+    const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
 
-      const newBestTime = prev.reactionTime && (!prev.bestTime || prev.reactionTime < prev.bestTime)
+    waitingTimeoutRef.current = setTimeout(() => {
+      setStartTime(performance.now());
+      setGameState('ready');
+      waitingTimeoutRef.current = null;
+    }, delay);
+
+    
+    setStats(prev => ({
+      ...prev,
+      bestTime: prev.reactionTime && (!prev.bestTime || prev.reactionTime < prev.bestTime)
         ? prev.reactionTime
-        : prev.bestTime;
-
-      return {
-        ...prev,
-        bestTime: newBestTime
-      };
-    });
-  }, []);
+        : prev.bestTime
+    }));
+  }, [stats.currentLevel]);
 
   useEffect(() => {
     if (shouldAdvanceLevel && countdown > 0) {
@@ -110,22 +109,17 @@ export default function ThemedGame() {
               intervalRef.current = null;
               setShouldAdvanceLevel(false);
 
-              setTimeout(() => {
-                setStats(current => {
-                  const newLevel = current.currentLevel + 1;
-                  if (newLevel <= LEVELS.length && current.currentLevel === stats.currentLevel) {
-                    setTimeout(() => {
-                      startLevel();
-                    }, 50);
-                    return { ...current, currentLevel: newLevel, levelScore: 0 };
-                  } else if (newLevel > LEVELS.length) {
-                    setGameState('gameOver');
-                    return current;
-                  } else {
-                    return current;
-                  }
-                });
-              }, 50);
+             
+              setStats(current => {
+                const newLevel = current.currentLevel + 1;
+                if (newLevel <= LEVELS.length) {
+                  setTimeout(() => startLevel(), 50);
+                  return { ...current, currentLevel: newLevel, levelScore: 0 };
+                } else {
+                  setGameState('gameOver');
+                  return current;
+                }
+              });
               return 0;
             }
             return prev - 1;
@@ -168,6 +162,7 @@ export default function ThemedGame() {
           const points = level.points + Math.max(0, Math.floor((level.targetTime - reactionTime) / 10));
 
           const playerName = localStorage.getItem('reactionSpeed_userName') || 'Anonymous';
+          
           fetch('/api/scores', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -177,25 +172,25 @@ export default function ThemedGame() {
               level: prev.currentLevel,
               score: points
             })
-          }).catch(error => console.error('Failed to save score:', error));
+          }).catch(() => {}); 
 
           fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: playerName })
-          }).catch(error => console.error('Failed to save user:', error));
+          }).catch(() => {}); 
 
           setCompletedLevel(prev.currentLevel);
           setGameState('levelComplete');
           setTimeout(() => {
             setCountdown(3);
             setShouldAdvanceLevel(true);
-          }, 5000);
+          }, 2000); 
 
           setTimeout(() => {
             setIsProcessing(false);
             processingRef.current = false;
-          }, 8000);
+          }, 3000); /
 
           return {
             ...prev,
@@ -212,7 +207,7 @@ export default function ThemedGame() {
             setGameState('gameOver');
           } else {
             setGameState('clicked');
-            setCountdown(5);
+            setCountdown(3); 
             if (!penaltyIntervalRef.current) {
               penaltyIntervalRef.current = setInterval(() => {
                 setCountdown(prevCount => {
@@ -232,7 +227,7 @@ export default function ThemedGame() {
       });
     } else if (gameState === 'waiting') {
       setGameState('tooEarly');
-      setCountdown(3);
+      setCountdown(2); 
       const penaltyInterval = setInterval(() => {
         setCountdown(prevCount => {
           if (prevCount <= 1) {
