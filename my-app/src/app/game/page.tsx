@@ -227,10 +227,16 @@ export default function Game() {
 
        
         levelAdvanceTimeoutRef.current = setTimeout(() => {
-          setCountdown(3);
-          setShouldAdvanceLevel(true);
+          advancingLevelRef.current = true;
+          const currentLevelNum = stats.currentLevel;
+          if (currentLevelNum < LEVELS.length) {
+            setStats(current => ({ ...current, currentLevel: current.currentLevel + 1, levelScore: 0 }));
+          } else {
+            setGameState('gameOver');
+            advancingLevelRef.current = false;
+          }
           processingRef.current = false;
-        }, 2000);
+        }, 3000);
         
         return;
       } else {
