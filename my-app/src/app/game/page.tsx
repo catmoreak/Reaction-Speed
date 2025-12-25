@@ -122,21 +122,6 @@ export default function Game() {
               if (intervalRef.current) clearInterval(intervalRef.current);
               intervalRef.current = null;
               setShouldAdvanceLevel(false);
-              
-             
-              if (advancingLevelRef.current) return 0;
-              advancingLevelRef.current = true;
-
-              levelAdvanceTimeoutRef.current = setTimeout(() => {
-                const currentLevelNum = stats.currentLevel;
-                if (currentLevelNum < LEVELS.length) {
-                  setStats(current => ({ ...current, currentLevel: current.currentLevel + 1, levelScore: 0 }));
-                } else if (currentLevelNum >= LEVELS.length) {
-                  setGameState('gameOver');
-                  advancingLevelRef.current = false;
-                }
-              }, 50);
-
               return 0;
             }
             return prev - 1;
@@ -155,24 +140,7 @@ export default function Game() {
         intervalRef.current = null;
       }
     };
-  }, [shouldAdvanceLevel, countdown, stats.currentLevel]);
-
-  
-  useEffect(() => {
-    if (advancingLevelRef.current && stats.currentLevel > completedLevel && stats.currentLevel <= LEVELS.length) {
-    
-      levelAdvanceTimeoutRef.current = setTimeout(() => {
-        startLevel(stats.currentLevel);
-        advancingLevelRef.current = false;
-      }, 100);
-    }
-
-    return () => {
-      if (levelAdvanceTimeoutRef.current) {
-        clearTimeout(levelAdvanceTimeoutRef.current);
-      }
-    };
-  }, [stats.currentLevel, completedLevel, startLevel]);
+  }, [shouldAdvanceLevel, countdown]);
 
   const currentLevel = LEVELS[stats.currentLevel - 1];
 
@@ -227,13 +195,13 @@ export default function Game() {
 
        
         levelAdvanceTimeoutRef.current = setTimeout(() => {
-          advancingLevelRef.current = true;
           const currentLevelNum = stats.currentLevel;
           if (currentLevelNum < LEVELS.length) {
-            setStats(current => ({ ...current, currentLevel: current.currentLevel + 1, levelScore: 0 }));
+            const nextLevel = currentLevelNum + 1;
+            setStats(prev => ({ ...prev, levelScore: 0 }));
+            startLevel(nextLevel);
           } else {
             setGameState('gameOver');
-            advancingLevelRef.current = false;
           }
           processingRef.current = false;
         }, 3000);
