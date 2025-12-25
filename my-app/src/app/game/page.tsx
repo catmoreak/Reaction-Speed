@@ -89,27 +89,29 @@ export default function Game() {
     setCountdown(0);
     setShouldAdvanceLevel(false);
     setGameState('waiting');
+
+    const targetLevelNum = levelNumber !== undefined ? levelNumber : stats.currentLevel;
+    const level = LEVELS[targetLevelNum - 1];
+    const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
+
+    waitingTimeoutRef.current = setTimeout(() => {
+      setStartTime(performance.now());
+      setGameState('ready');
+      waitingTimeoutRef.current = null;
+    }, delay);
+
     setStats(prev => {
-      const currentLevelNum = levelNumber !== undefined ? levelNumber : prev.currentLevel;
-      const level = LEVELS[currentLevelNum - 1];
-   const delay = Math.random() * (level.maxWait - level.minWait) + level.minWait;
-
-      waitingTimeoutRef.current = setTimeout(() => {
-   setStartTime(performance.now());
-        setGameState('ready');
-        waitingTimeoutRef.current = null;
-      }, delay);
-
       const newBestTime = prev.reactionTime && (!prev.bestTime || prev.reactionTime < prev.bestTime) 
-    ? prev.reactionTime 
+        ? prev.reactionTime 
         : prev.bestTime;
       
       return {
         ...prev,
+        currentLevel: targetLevelNum,
         bestTime: newBestTime
       };
     });
-  }, []);
+  }, [stats.currentLevel]);
 
   useEffect(() => {
     if (shouldAdvanceLevel && countdown > 0) {
@@ -263,10 +265,14 @@ export default function Game() {
     } else if (gameState === 'waiting') {
       setGameState('tooEarly');
       setCountdown(3);
-      const penaltyInterval = setInterval(() => {
+      
+      if (penaltyIntervalRef.current) clearInterval(penaltyIntervalRef.current);
+
+      penaltyIntervalRef.current = setInterval(() => {
         setCountdown(prevCount => {
           if (prevCount <= 1) {
-            clearInterval(penaltyInterval);
+            if (penaltyIntervalRef.current) clearInterval(penaltyIntervalRef.current);
+            penaltyIntervalRef.current = null;
             setTimeout(() => startLevel(), 500);
             return 0;
           }
