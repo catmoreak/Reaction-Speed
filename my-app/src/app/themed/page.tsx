@@ -190,7 +190,7 @@ export default function ThemedGame() {
           setTimeout(() => {
             setIsProcessing(false);
             processingRef.current = false;
-          }, 3000); /
+          }, 3000);
 
           return {
             ...prev,
