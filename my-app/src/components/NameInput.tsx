@@ -37,7 +37,7 @@ export default function NameInput({ onNameSubmit }: NameInputProps) {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-indigo-900 via-purple-700 to-red-900 relative overflow-hidden flex items-center justify-center">
+    <div className="min-h-screen bg-linear-to-br from-blue-900 via-black to-blue-900 relative overflow-hidden flex items-center justify-center">
    
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-96 h-96 bg-red-500/30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
