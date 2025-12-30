@@ -62,14 +62,11 @@ export default function Home() {
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
               </button>
-              <button className="px-8 py-4 border-2 border-slate-400 text-slate-300 hover:border-white hover:text-white text-lg font-semibold rounded-2xl transition-all duration-300">
+              <button onClick={() => window.location.href = '/leaderboard'} className="px-8 py-4 border-2 border-slate-400 text-slate-300 hover:border-white hover:text-white text-lg font-semibold rounded-2xl transition-all duration-300">
                 View Leaderboard
               </button>
             </div>
-
-            
-           
-          </div>
+</div>
         </div>
 
       
