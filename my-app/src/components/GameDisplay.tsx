@@ -41,7 +41,7 @@ export default function GameDisplay({
 
       <div className="flex justify-center px-4 py-8">
         <div
-          className={`w-full max-w-2xl h-96 rounded-2xl ${getBackgroundColor()} cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-150 shadow-2xl hover:scale-101 active:scale-98 border-4 border-white/20`}
+          className={`w-full max-w-2xl h-96 imperfect-border ${getBackgroundColor()} cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-150 shadow-2xl hover:scale-101 active:scale-98 border-4 border-white/20 slight-rotate`}
           onClick={onClick}
         >
           <div className={getMessageClass()}>{getMessage()}</div>
@@ -53,7 +53,7 @@ export default function GameDisplay({
         {stats.currentLevel === 1 && gameState === 'waiting' && countdown === 0 && !gameStarted && (
           <button
             onClick={onStart}
-            className="px-12 py-6 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-red-400 glow-border animate-float"
+            className="px-12 py-6 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-2xl font-bold imperfect-border transition-all duration-300 transform hover:scale-105 shadow-2xl border-4 border-red-400 glow-border animate-float handwritten slight-skew"
           >
             START LEVEL 1
           </button>

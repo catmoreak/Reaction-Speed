@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-handwritten: var(--font-caveat);
 }
 
 body {
@@ -39,6 +40,22 @@ body {
 
 .glow-border {
   animation: glow 2s ease-in-out infinite;
+}
+
+.handwritten {
+  font-family: var(--font-caveat);
+}
+
+.imperfect-border {
+  border-radius: 15px 20px 18px 22px;
+}
+
+.slight-rotate {
+  transform: rotate(-1deg);
+}
+
+.slight-skew {
+  transform: skew(-0.5deg);
 }
 
 

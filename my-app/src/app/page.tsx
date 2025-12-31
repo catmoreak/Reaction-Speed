@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import NameInput from '@/components/NameInput';
+import { Goblin_One, Google_Sans_Code, Love_Light, Manufacturing_Consent } from 'next/font/google';
+import { ReactServerDOMTurbopackClient } from 'next/dist/server/route-modules/app-page/vendored/ssr/entrypoints';
+import { logDisallowedDynamicError } from 'next/dist/server/app-render/dynamic-rendering';
+import { LocaleRouteNormalizer } from 'next/dist/server/normalizers/locale-route-normalizer';
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
@@ -43,9 +47,9 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             
 
-            <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-tight">
+            <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-tight slight-rotate">
               Challenge Your
-              <span className="block bg-linear-to-r from-green-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+              <span className="block bg-linear-to-r from-green-400 via-blue-500 to-purple-600 bg-clip-text text-transparent handwritten">
                 Reaction Speed
               </span>
             </h1>
@@ -56,13 +60,13 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <button onClick={handleGameStart} className="group px-8 py-4 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-red-500/25 inline-block animate-float">
+              <button onClick={handleGameStart} className="group px-8 py-4 bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-lg font-bold imperfect-border transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-red-500/25 inline-block animate-float slight-skew">
                 <span className="flex items-center space-x-2">
                   <span>  Start now </span>
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
               </button>
-              <button onClick={() => window.location.href = '/leaderboard'} className="px-8 py-4 border-2 border-slate-400 text-slate-300 hover:border-white hover:text-white text-lg font-semibold rounded-2xl transition-all duration-300">
+              <button onClick={() => window.location.href = '/leaderboard'} className="px-8 py-4 border-2 border-slate-400 text-slate-300 hover:border-white hover:text-white text-lg font-semibold imperfect-border transition-all duration-300 slight-rotate">
                 View Leaderboard
               </button>
             </div>
