@@ -52,6 +52,24 @@ body {
   }
 }
 
+@keyframes move-grid {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -100px 100px;
+  }
+}
+
+.cyber-grid {
+  background-color: #000;
+  background-image:
+    linear-gradient(rgba(0, 255, 0, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 0, 0.2) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: move-grid 4s linear infinite;
+}
+
 .glow-border {
   animation: glow 2s ease-in-out infinite;
 }
