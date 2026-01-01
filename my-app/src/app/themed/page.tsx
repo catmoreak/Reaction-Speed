@@ -301,13 +301,13 @@ export default function ThemedGame() {
           <div className="absolute top-10 left-10 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse"></div>
           <div className="absolute top-20 right-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse animation-delay-2000"></div>
           <div className="absolute bottom-10 left-1/2 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse animation-delay-4000"></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-80"></div>
+          <div className="absolute inset-0 bg-linear-to-br from-black via-gray-900 to-black opacity-80"></div>
         </div>
 
         <div className="absolute inset-0 opacity-30" style={{backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '30px 30px'}}></div>
 
         <div className="relative z-10 text-center max-w-2xl mx-auto px-4">
-          <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-pink-400 to-blue-400 mb-6 leading-tight animate-pulse">
+          <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-linear-to-r from-green-400 via-pink-400 to-blue-400 mb-6 leading-tight animate-pulse">
             Cyber Reaction
             <span className="block text-white drop-shadow-lg">
               Challenge
@@ -323,7 +323,7 @@ export default function ThemedGame() {
               setGameStarted(true);
               setTimeout(() => startLevel(), 500);
             }}
-            className="px-8 py-4 bg-gradient-to-r from-green-400 to-pink-500 hover:from-green-500 hover:to-pink-600 text-black text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-green-400/50 inline-block animate-bounce"
+            className="px-8 py-4 bg-linear-to-r from-green-400 to-pink-500 hover:from-green-500 hover:to-pink-600 text-black text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-green-400/50 inline-block animate-bounce"
           >
             Start Game
           </button>
@@ -338,7 +338,7 @@ export default function ThemedGame() {
         <div className="absolute top-10 left-10 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse"></div>
         <div className="absolute top-20 right-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse animation-delay-2000"></div>
         <div className="absolute bottom-10 left-1/2 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse animation-delay-4000"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-black to-blue-900 opacity-80"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-blue-900 via-black to-blue-900 opacity-80"></div>
       </div>
 
       <div className="absolute inset-0 opacity-30" style={{backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '30px 30px'}}></div>
@@ -414,7 +414,7 @@ export default function ThemedGame() {
           <button
             onClick={handleClick}
             disabled={gameState === 'levelComplete' || gameState === 'gameOver'}
-            className="px-12 py-6 bg-gradient-to-r from-green-400 to-pink-500 hover:from-green-500 hover:to-pink-600 text-black text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-12 py-6 bg-linear-to-r from-green-400 to-pink-500 hover:from-green-500 hover:to-pink-600 text-black text-2xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {gameState === 'levelComplete' ? 'LEVEL COMPLETE' :
              gameState === 'gameOver' ? 'PLAY AGAIN' : 'CLICK HERE'}

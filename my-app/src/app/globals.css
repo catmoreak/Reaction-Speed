@@ -40,33 +40,20 @@ body {
 
 @keyframes matrixRain {
   0% {
-    transform: translateY(-100vh);
-    opacity: 1;
+    transform: translateY(-10vh);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
   }
   100% {
-    transform: translateY(100vh);
+    transform: translateY(110vh);
     opacity: 0;
   }
 }
 
 .glow-border {
   animation: glow 2s ease-in-out infinite;
-}
-
-.handwritten {
-  font-family: var(--font-caveat);
-}
-
-.imperfect-border {
-  border-radius: 15px 20px 18px 22px;
-}
-
-.slight-rotate {
-  transform: rotate(-1deg);
-}
-
-.slight-skew {
-  transform: skew(-0.5deg);
 }
 
 
