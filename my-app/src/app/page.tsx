@@ -101,13 +101,13 @@ export default function Home() {
 
                 </div>
                 <div className="grid md:grid-cols-3 gap-8">
-                    <HowToPlayCard number="1" title="Prepare">
+                    <HowToPlayCard number="1" title="WAIT">
                        Click on start buttona and wait for the screen to blink red to green
                     </HowToPlayCard>
-                    <HowToPlayCard number="2" title="React">
+                    <HowToPlayCard number="2" title="STRIKE">
                         The moment the screen turns green, click as fast as you can.
                     </HowToPlayCard>
-                    <HowToPlayCard number="3" title="Improve">
+                    <HowToPlayCard number="3" title="WIN">
                       Dont click too late and lose your hearts
                     </HowToPlayCard>
                 </div>
