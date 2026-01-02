@@ -18,10 +18,11 @@ const HowToPlayCard = ({ number, title, children }: { number: string; title: str
 
 
 
-    <div className="p-6 rounded-lg border border-gray-700 text-center transition-all duration-300 hover:border-green-400 hover:shadow-[0_0_5px_#0f0,0_0_10px_#0f0,0_0_15px_#0f0,0_0_20px_#0f0,inset_0_0_5px_rgba(0,255,0,0.5)]">
-        <div className="text-5xl font-bold text-green-400 mb-4">{number}</div>
-        <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-        <p className="text-gray-400">{children}</p>
+    <div className="p-6 rounded-lg border border-gray-700 text-center transition-all duration-300 hover:border-green-400 hover:shadow-[inset_0_0_20px_rgba(0,255,0,0.3),inset_0_0_40px_rgba(0,255,0,0.2),inset_0_0_60px_rgba(0,255,0,0.1)] hover:bg-linear-to-br hover:from-green-900/30 hover:to-green-800/20 hover:animate-pulse relative overflow-hidden group">
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-green-400/20 to-transparent -skew-x-12 translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <div className="text-5xl font-bold text-green-400 mb-4 group-hover:text-shadow-[0_0_20px_#0f0,0_0_40px_#0f0] transition-all duration-300 relative z-10">{number}</div>
+             <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-shadow-[0_0_10px_#0f0] transition-all duration-300 relative z-10">{title}</h3>
+        <p className="text-gray-400 group-hover:text-green-300 transition-all duration-300 relative z-10">{children}</p>
     </div>
 );
 
@@ -29,11 +30,11 @@ const HowToPlayCard = ({ number, title, children }: { number: string; title: str
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
-  const [showNameInput, setShowNameInput] = useState(false);
+        const [showNameInput, setShowNameInput] = useState(false);
   const [rainColumns, setRainColumns] = useState<RainColumn[]>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 100);
+                const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
@@ -41,10 +42,10 @@ export default function Home() {
     const columns = Array.from({length: 100}, (_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 8}s`,
+           delay: `${Math.random() * 8}s`,
       duration: `${6 + Math.random() * 4}s`,
-      text: Array.from({length: 25}, () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                         text: Array.from({length: 25}, () => {
+                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         return chars[Math.floor(Math.random() * chars.length)];
       }).join('')
     }));
@@ -52,7 +53,7 @@ export default function Home() {
   }, []);
 
   const handleGameStart = () => {
-    setShowNameInput(true);
+          setShowNameInput(true);
   };
 
   const handleNameSubmit = () => {
@@ -66,7 +67,7 @@ export default function Home() {
   return (
     <div className="min-h-screen text-white relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
-        {rainColumns.map(col => (
+             {rainColumns.map(col => (
           <div key={col.id} className="absolute text-green-400 font-mono text-xs opacity-50" style={{left: col.left, animation: `matrixRain ${col.duration} linear infinite`, animationDelay: col.delay, textShadow: '0 0 5px #00ff00'}}>
             {col.text}
           </div>
@@ -83,11 +84,11 @@ export default function Home() {
                 Lets test how fast you are !!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button onClick={handleGameStart} className="px-8 py-4 bg-green-500 hover:bg-green-600 text-gray-900 text-lg font-bold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-500/20">
+                           <button onClick={handleGameStart} className="px-8 py-4 bg-green-500 hover:bg-green-600 text-gray-900 text-lg font-bold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-500/20">
                 Start Challenge
-              </button>
+                       </button>
               <button onClick={() => window.location.href = '/leaderboard'} className="px-8 py-4 border-2 border-gray-500 text-gray-300 hover:border-white hover:text-white text-lg font-semibold rounded-lg transition-all duration-300">
-                View Leaderboard
+                                View Leaderboard
               </button>
             </div>
         </section>
