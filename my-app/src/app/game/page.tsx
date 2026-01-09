@@ -201,10 +201,11 @@ export default function Game() {
         
        
         const playerName = localStorage.getItem('reactionSpeed_userName') || 'Anonymous';
-        fetch('/api/scores', {
+        fetch('/api/leaderboard', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            action: 'saveScore',
             userName: playerName,
             reactionTime,
             level: stats.currentLevel,
@@ -212,10 +213,13 @@ export default function Game() {
           })
         }).catch(error => console.error('Failed to save score:', error));
 
-        fetch('/api/users', {
+        fetch('/api/leaderboard', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: playerName })
+          body: JSON.stringify({
+            action: 'saveUser',
+            name: playerName
+          })
         }).catch(error => console.error('Failed to save user:', error));
 
        
